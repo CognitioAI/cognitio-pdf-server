@@ -1,0 +1,13 @@
+{
+  "name": "cognitio-pdf-node",
+  "version": "1.0.0",
+  "description": "Lightweight PDF server using html-pdf-node",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "html-pdf-node": "^1.0.3"
+  }
+}
