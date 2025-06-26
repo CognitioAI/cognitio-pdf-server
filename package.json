@@ -2,14 +2,14 @@
 {
   "name": "cognitio-pdf-server",
   "version": "1.0.0",
-  "description": "Service de génération de PDF via Playwright pour Cognitio",
+  "description": "Service de génération de PDF à partir de HTML pour Cognitio",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "body-parser": "^1.20.2",
     "express": "^4.18.2",
+    "body-parser": "^1.20.2",
     "playwright": "^1.44.0"
   },
   "engines": {
