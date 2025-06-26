@@ -1,33 +1,34 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const { chromium } = require('playwright');
+const express = require("express");
+const bodyParser = require("body-parser");
+const { chromium } = require("playwright");
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 
 app.use(bodyParser.json());
 
-app.post('/generate', async (req, res) => {
-  const { html } = req.body;
+app.post("/", async (req, res) => {
+  const html = req.body.html;
+
   if (!html) {
-    return res.status(400).send("Missing 'html' in request body");
+    return res.status(400).send("Missing HTML content in request body.");
   }
 
   try {
     const browser = await chromium.launch();
     const page = await browser.newPage();
-    await page.setContent(html);
-    const pdfBuffer = await page.pdf({ format: 'A4' });
+    await page.setContent(html, { waitUntil: "networkidle" });
+    const pdfBuffer = await page.pdf({ format: "A4" });
     await browser.close();
 
     res.set({
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': 'attachment; filename=rapport.pdf'
+      "Content-Type": "application/pdf",
+      "Content-Disposition": "attachment; filename=report.pdf",
     });
     res.send(pdfBuffer);
-  } catch (err) {
-    console.error("Error generating PDF:", err);
-    res.status(500).send("Internal Server Error");
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    res.status(500).send("Failed to generate PDF.");
   }
 });
 
