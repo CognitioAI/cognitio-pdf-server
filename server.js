@@ -1,25 +1,32 @@
-
-const express = require("express");
+const express = require('express');
 const app = express();
 const port = process.env.PORT || 10000;
-const html_to_pdf = require("html-pdf-node");
+const fs = require('fs');
+const html_to_pdf = require('html-pdf-node');
 
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: '5mb' }));
 
-app.post("/pdf", async (req, res) => {
-    try {
-        const html = req.body.html;
-        const file = { content: html };
-        const options = { format: 'A4' };
-        const pdfBuffer = await html_to_pdf.generatePdf(file, options);
-        res.setHeader("Content-Type", "application/pdf");
-        res.send(pdfBuffer);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("PDF generation failed");
+app.post('/', async (req, res) => {
+  try {
+    const htmlContent = req.body.html;
+
+    if (!htmlContent) {
+      return res.status(400).send('Missing HTML content in request body');
     }
+
+    const file = { content: htmlContent };
+
+    const pdfBuffer = await html_to_pdf.generatePdf(file, { format: 'A4' });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.send(pdfBuffer);
+
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    res.status(500).send('Error generating PDF');
+  }
 });
 
 app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+  console.log(`Server running on port ${port}`);
 });
