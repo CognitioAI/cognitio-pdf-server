@@ -1,14 +1,16 @@
 {
   "name": "cognitio-pdf-server",
   "version": "1.0.0",
-  "description": "Service de base pour serveur Node.js sans Puppeteer.",
+  "description": "Service de génération de PDF à partir de HTML pour Cognitio",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "postinstall": "puppeteer install"
   },
   "dependencies": {
+    "express": "^4.18.2",
     "body-parser": "^1.20.2",
-    "express": "^4.18.2"
+    "puppeteer": "^21.3.8"
   },
   "engines": {
     "node": ">=18.x"
