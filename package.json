@@ -5,11 +5,12 @@
   "description": "Service de génération de PDF à partir de HTML pour Cognitio",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "postinstall": "npx playwright install --with-deps"
   },
   "dependencies": {
-    "express": "^4.18.2",
     "body-parser": "^1.20.2",
+    "express": "^4.18.2",
     "playwright": "^1.44.0"
   },
   "engines": {
