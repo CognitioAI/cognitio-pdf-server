@@ -1,31 +1,40 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-import puppeteer from 'puppeteer';
-
+// Nouveau fichier server.js corrigé avec Puppeteer embarqué (headless Chrome inclus)
+const express = require("express");
+const bodyParser = require("body-parser");
+const puppeteer = require("puppeteer");
 const app = express();
 const port = process.env.PORT || 10000;
 
-app.use(bodyParser.json({ limit: '2mb' }));
+app.use(bodyParser.json());
 
-app.post('/generate-pdf', async (req, res) => {
+app.post("/generate-pdf", async (req, res) => {
   const { html } = req.body;
-  if (!html) return res.status(400).send('HTML content is missing.');
+
+  if (!html) {
+    return res.status(400).json({ error: "Missing HTML content." });
+  }
 
   try {
     const browser = await puppeteer.launch({
-      headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      headless: "new",
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-gpu",
+        "--disable-dev-shm-usage"
+      ]
     });
     const page = await browser.newPage();
-    await page.setContent(html);
-    const pdfBuffer = await page.pdf({ format: 'A4' });
+    await page.setContent(html, { waitUntil: "networkidle0" });
+    const pdfBuffer = await page.pdf({ format: "A4" });
+
     await browser.close();
 
-    res.set({ 'Content-Type': 'application/pdf' });
+    res.set({ "Content-Type": "application/pdf" });
     res.send(pdfBuffer);
-  } catch (error) {
-    console.error('PDF generation failed:', error);
-    res.status(500).send(`PDF generation error: ${error.message}`);
+  } catch (err) {
+    console.error("PDF generation failed:", err);
+    res.status(500).json({ error: "PDF generation failed.", details: err.message });
   }
 });
 
