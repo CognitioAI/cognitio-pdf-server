@@ -1,39 +1,42 @@
-
-const express = require('express');
-const bodyParser = require('body-parser');
-const { chromium } = require('playwright');
+const express = require("express");
+const bodyParser = require("body-parser");
+const { chromium } = require("playwright");
+const fs = require("fs");
+const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-app.use(bodyParser.json({ limit: '5mb' }));
+app.use(bodyParser.json());
 
-app.post('/generate', async (req, res) => {
+app.get("/", (req, res) => {
+  res.send("PDF Server is running.");
+});
+
+app.post("/generate", async (req, res) => {
   const { html } = req.body;
 
-  if (!html) return res.status(400).send('Missing HTML content');
+  if (!html) {
+    return res.status(400).json({ error: "HTML content is required." });
+  }
 
   try {
     const browser = await chromium.launch();
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle' });
+    await page.setContent(html, { waitUntil: "domcontentloaded" });
+
     const pdfBuffer = await page.pdf();
     await browser.close();
 
     res.set({
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': 'inline; filename="output.pdf"',
+      "Content-Type": "application/pdf",
+      "Content-Disposition": "attachment; filename=rapport.pdf",
     });
-
     res.send(pdfBuffer);
-  } catch (err) {
-    console.error('PDF generation error:', err);
-    res.status(500).send('Error generating PDF');
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    res.status(500).json({ error: "Failed to generate PDF." });
   }
-});
-
-app.get('/', (req, res) => {
-  res.send('Playwright PDF server is running.');
 });
 
 app.listen(PORT, () => {
