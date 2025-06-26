@@ -1,6 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const puppeteer = require("puppeteer"); // Assure-toi que c’est bien installé
+const puppeteer = require("puppeteer");
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -12,33 +12,33 @@ app.get("/", (req, res) => {
 });
 
 app.post("/generate", async (req, res) => {
-  const html = req.body.html;
+  const { html } = req.body;
 
   if (!html) {
-    return res.status(400).send("Missing HTML content");
+    return res.status(400).send("Missing HTML content.");
   }
 
   try {
     const browser = await puppeteer.launch({
-      args: ["--no-sandbox"],
-      headless: "new",
+      headless: "new", // recommandé avec Puppeteer 21+
+      args: ["--no-sandbox", "--disable-setuid-sandbox"]
     });
 
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "networkidle0" });
-
     const pdfBuffer = await page.pdf({ format: "A4" });
+
     await browser.close();
 
     res.set({
       "Content-Type": "application/pdf",
-      "Content-Disposition": "attachment; filename=generated.pdf",
+      "Content-Disposition": "attachment; filename=rapport.pdf"
     });
 
     res.send(pdfBuffer);
-  } catch (err) {
-    console.error("PDF generation error:", err);
-    res.status(500).send("Internal Server Error");
+  } catch (error) {
+    console.error("PDF generation failed:", error);
+    res.status(500).send("PDF generation failed.");
   }
 });
 
