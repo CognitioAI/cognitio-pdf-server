@@ -1,31 +1,41 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const puppeteer = require("puppeteer");
+
+const express = require('express');
+const bodyParser = require('body-parser');
+const { chromium } = require('playwright');
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-app.use(bodyParser.json({ limit: "10mb" }));
+app.use(bodyParser.json({ limit: '5mb' }));
 
-app.post("/generate", async (req, res) => {
+app.post('/generate', async (req, res) => {
+  const { html } = req.body;
+
+  if (!html) return res.status(400).send('Missing HTML content');
+
   try {
-    const { html } = req.body;
-    const browser = await puppeteer.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"]
-    });
+    const browser = await chromium.launch();
     const page = await browser.newPage();
-    await page.setContent(html);
-    const pdfBuffer = await page.pdf({ format: "A4" });
+    await page.setContent(html, { waitUntil: 'networkidle' });
+    const pdfBuffer = await page.pdf();
     await browser.close();
 
-    res.set({ "Content-Type": "application/pdf" });
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'inline; filename="output.pdf"',
+    });
+
     res.send(pdfBuffer);
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Erreur lors de la génération du PDF");
+    console.error('PDF generation error:', err);
+    res.status(500).send('Error generating PDF');
   }
 });
 
+app.get('/', (req, res) => {
+  res.send('Playwright PDF server is running.');
+});
+
 app.listen(PORT, () => {
-  console.log(`PDF Server running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
