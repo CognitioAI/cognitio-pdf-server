@@ -1,37 +1,26 @@
+
 const express = require("express");
-const bodyParser = require("body-parser");
 const { chromium } = require("playwright");
-
 const app = express();
-const PORT = process.env.PORT || 10000;
+const port = process.env.PORT || 10000;
 
-app.use(bodyParser.json());
+app.use(express.json({ limit: "2mb" }));
 
 app.post("/", async (req, res) => {
-  const html = req.body.html;
+    const { html } = req.body;
+    if (!html) return res.status(400).send("Missing HTML content");
 
-  if (!html) {
-    return res.status(400).send("Missing HTML content in request body.");
-  }
-
-  try {
     const browser = await chromium.launch();
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "networkidle" });
+    await page.setContent(html, { waitUntil: "domcontentloaded" });
+
     const pdfBuffer = await page.pdf({ format: "A4" });
     await browser.close();
 
-    res.set({
-      "Content-Type": "application/pdf",
-      "Content-Disposition": "attachment; filename=report.pdf",
-    });
+    res.set("Content-Type", "application/pdf");
     res.send(pdfBuffer);
-  } catch (error) {
-    console.error("Error generating PDF:", error);
-    res.status(500).send("Failed to generate PDF.");
-  }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
 });

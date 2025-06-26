@@ -1,0 +1,10 @@
+
+services:
+  - type: web
+    name: cognitio-pdf
+    env: node
+    plan: free
+    buildCommand: |
+      npm install
+      npx playwright install --with-deps
+    startCommand: node server.js
